@@ -1,0 +1,17 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres
+  namespace: side-projects
+  labels:
+    app: postgres
+    role: postgres
+spec:
+  ports:
+  - port: 5432
+    targetPort: postgres-port
+  selector:
+    app: postgres
+    role: postgres
+  type: LoadBalancer

@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-server-deployment
+  namespace: side-projects
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: http-rack-server
+      role: http-rack-server
+  template:
+    metadata:
+      labels:
+        app: http-rack-server
+        role: http-rack-server
+    spec:
+      volumes:
+      - name: app-volume
+        persistentVolumeClaim:
+         claimName: http-server-sources
+        # This will also work cause minikube_nsfd_mount.sh mount the folder
+        # hostPath:
+        #   path: /host-sources/http-server
+      - name: data-storage
+        persistentVolumeClaim:
+         claimName: tmp-pv-claim
+      containers:
+      - name: http-rack-server
+        image: library/ruby:alpine
+        command: ["ruby", "config.ru"]
+        lifecycle:
+          postStart:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - >
+                  touch /tmp/healthy;
+                  apk add fish;
+        workingDir: /app
+        volumeMounts:
+        - name: app-volume
+          mountPath: /app
+        - name: data-storage
+          mountPath: /data
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+        - name: RACK_ENV
+          value: development
+        ports:
+        - containerPort: 3000
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/healthy
+          initialDelaySeconds: 15
+          periodSeconds: 2

@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: http-rack-server
+  namespace: side-projects
+spec:
+  rules:
+  - host: http-rack-server.local
+    http:
+      paths:
+      - backend:
+          serviceName: http-rack-service
+          servicePort: 80
+        path: /

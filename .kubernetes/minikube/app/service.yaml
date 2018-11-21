@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-rack-service
+  namespace: side-projects
+  labels:
+    app: http-rack-service
+    role: http-rack-service
+spec:
+  ports:
+  - name: http-rack-service
+    port: 80
+    targetPort: 3000
+  selector:
+    app: http-rack-server
+    role: http-rack-server
+  type: NodePort
